@@ -42,6 +42,26 @@ bsg_unwinder bsg_configured_unwind_style() {
   return BSG_CUSTOM_UNWIND;
 }
 
+void bugsnag_add_on_error_env(JNIEnv *env, bsg_on_error on_error) {
+  if (bsg_global_env != NULL) {
+    bsg_global_env->on_error = on_error;
+  }
+}
+
+void bugsnag_remove_on_error_env(JNIEnv *env, bsg_on_error on_error) {
+  if (bsg_global_env != NULL) {
+    bsg_global_env->on_error = NULL;
+  }
+}
+
+bool bsg_run_on_error(bsg_environment *env) {
+  bsg_on_error on_error = env->on_error;
+  if (on_error != NULL) {
+      return on_error(&env->next_event);
+  }
+  return true;
+}
+
 JNIEXPORT void JNICALL Java_com_bugsnag_android_ndk_NativeBridge_install(
     JNIEnv *env, jobject _this, jstring _event_path, jboolean auto_detect_ndk_crashes,
     jint _api_level, jboolean is32bit) {
